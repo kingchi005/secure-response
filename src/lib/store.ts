@@ -13,7 +13,7 @@ export const useAuthStore = create<AuthStore>()(
 	// persist(
 	computed((set, get) =>
 		compute<AuthStore>({
-			email: "kingchi005@gmail.com",
+			email: "",
 			authenticate(email) {
 				set((st) => ({ ...st, email }));
 			},

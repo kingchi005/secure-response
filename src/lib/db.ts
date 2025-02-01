@@ -1,5 +1,6 @@
 import { createClient } from "@libsql/client";
 import { sendMail } from "./email";
+import { useResponderStore } from "./store";
 
 // Define strict types for our database
 export type IncidentStatus = "pending" | "in-progress" | "resolved";
@@ -126,12 +127,8 @@ export const saveIncident = async (incident: Incident): Promise<void> => {
 			Location: <string>(${incident.latitude}, ${incident.longitude})</string>
 			Anonymous: <string>${incident.isAnonymous ? "Yes" : "No"}</string>
         `;
-
-		await sendMail(
-			emailBody,
-			"kingchi005@gmail.com",
-			"Emergency Incident Report"
-		);
+		const responders = useResponderStore.getState().data;
+		await sendMail(emailBody, responders[0].email, "Emergency Incident Report");
 	} catch (error) {
 		console.error("Failed to save incident:", error);
 		throw error;
