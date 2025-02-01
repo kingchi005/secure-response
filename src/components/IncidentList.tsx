@@ -26,7 +26,7 @@ type Incident = {
 	audioUrl: string | null;
 };
 
-export const IncidentDashboard = () => {
+export const IncidentList = () => {
 	const incidents = useIncidentStore((st) => st.data);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("all");

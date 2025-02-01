@@ -4,11 +4,12 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";
 import { saveIncident } from "@/lib/db";
 import { v4 as uuidv4 } from "uuid";
+import useLocation from "@/hooks/use-location";
 
-export const EmergencyButton = () => {
+export const EmergencyButton = ({ isRecording }: { isRecording?: boolean }) => {
 	const [isActive, setIsActive] = useState(false);
+	const { location } = useLocation({ isActive });
 	const [timer, setTimer] = useState(0);
-	const [location, setLocation] = useState<GeolocationCoordinates | null>(null);
 	const { toast } = useToast();
 
 	useEffect(() => {
@@ -22,33 +23,8 @@ export const EmergencyButton = () => {
 	}, [isActive]);
 
 	useEffect(() => {
-		let watchId: number;
-		if (isActive && "geolocation" in navigator) {
-			watchId = navigator.geolocation.watchPosition(
-				(position) => {
-					setLocation(position.coords);
-					toast({
-						title: "Location Updated",
-						description: `Current location: ${position.coords.latitude.toFixed(
-							4
-						)}, ${position.coords.longitude.toFixed(4)}`,
-					});
-				},
-				(error) => {
-					console.error("Location tracking error:", error);
-					toast({
-						title: "Location Error",
-						description:
-							"Unable to track location. Please enable location services.",
-						variant: "destructive",
-					});
-				}
-			);
-		}
-		return () => {
-			if (watchId) navigator.geolocation.clearWatch(watchId);
-		};
-	}, [isActive, toast]);
+		setIsActive(isRecording);
+	}, [isRecording]);
 
 	const handleEmergency = async () => {
 		if (isActive) {
@@ -64,6 +40,7 @@ export const EmergencyButton = () => {
 					description: `Emergency SOS activated for ${formatTime(timer)}`,
 					timestamp: new Date().toISOString(),
 					status: "pending",
+					image: "",
 					hasMedia: false,
 					isAnonymous: false,
 					audioUrl: "",

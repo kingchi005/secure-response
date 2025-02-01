@@ -31,6 +31,7 @@ export const IncidentReport = () => {
 	const [category, setCategory] = useState<IncidentCategory>("other");
 	const [isAnonymous, setIsAnonymous] = useState(false);
 	const [media, setMedia] = useState<File[]>([]);
+	const [fileUrl, setFileUrl] = useState("");
 	const { toast } = useToast();
 	const [location, setLocation] = useState<GeolocationCoordinates | null>(null);
 
@@ -42,12 +43,12 @@ export const IncidentReport = () => {
 			watchId = navigator.geolocation.watchPosition(
 				(position) => {
 					setLocation(position.coords);
-					toast({
-						title: "Location Updated",
-						description: `Current location: ${position.coords.latitude.toFixed(
-							4
-						)}, ${position.coords.longitude.toFixed(4)}`,
-					});
+					// toast({
+					// 	title: "Location Updated",
+					// 	description: `Current location: ${position.coords.latitude.toFixed(
+					// 		4
+					// 	)}, ${position.coords.longitude.toFixed(4)}`,
+					// });
 				},
 				(error) => {
 					console.error("Location tracking error:", error);
@@ -79,10 +80,11 @@ export const IncidentReport = () => {
 		media.forEach((file) => {
 			const reader = new FileReader();
 			reader.onloadend = () => {
-				localStorage.setItem(
-					`incident-media-${file.name}`,
-					reader.result as string
-				);
+				setFileUrl(reader.result.toString() as string);
+				// localStorage.setItem(
+				// 	`incident-media-${file.name}`,
+				// 	reader.result as string
+				// );
 			};
 			reader.readAsDataURL(file);
 		});
@@ -93,6 +95,7 @@ export const IncidentReport = () => {
 			description,
 			timestamp: new Date().toISOString(),
 			status: "pending",
+			image: fileUrl,
 			hasMedia: false,
 			isAnonymous,
 			audioUrl: "",
@@ -109,6 +112,8 @@ export const IncidentReport = () => {
 		setCategory("other");
 		setMedia([]);
 	};
+
+	// console.log(fileUrl);
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6 w-full max-w-md">
@@ -150,13 +155,16 @@ export const IncidentReport = () => {
 					type="file"
 					onChange={handleMediaUpload}
 					accept="image/*,video/*"
-					multiple
+					// multiple
 					className="cursor-pointer"
 				/>
 				{media.length > 0 && (
-					<div className="text-sm text-gray-500">
-						{media.length} file(s) selected
-					</div>
+					<>
+						<img src={fileUrl} className="size-20" />
+						<div className="text-sm text-gray-500">
+							{media.length} file(s) selected
+						</div>
+					</>
 				)}
 			</div>
 
