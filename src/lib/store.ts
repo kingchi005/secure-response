@@ -30,6 +30,8 @@ export const useAuthStore = create<AuthStore>()(
 
 type IncidentStore = {
 	data: Incident[];
+	findById(id: string): Incident;
+	updateStatus(id: string, status: Incident["status"]): void;
 	init(): Promise<void>;
 };
 
@@ -39,10 +41,20 @@ export const useIncidentStore = create<IncidentStore>()(
 		compute<IncidentStore>({
 			data: [],
 			async init() {
-				const interval = setInterval(async () => {
-					const data = await getIncidents();
-					set((st) => ({ ...st, data }));
-				}, 500);
+				// const interval = setInterval(async () => {
+				const data = await getIncidents();
+				set((st) => ({ ...st, data }));
+				// }, 500);
+			},
+			findById(id) {
+				const data = get().data;
+				return data.find((item) => item.id === id) || null;
+			},
+			updateStatus(id, status) {
+				const data = get().data.map((incident) =>
+					incident.id === id ? { ...incident, status } : incident
+				);
+				set((st) => ({ ...st, data }));
 			},
 		})
 	)

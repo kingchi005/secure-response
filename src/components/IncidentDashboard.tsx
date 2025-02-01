@@ -11,6 +11,7 @@ import {
 import { getIncidents } from "@/lib/db";
 import { Search } from "lucide-react";
 import { useIncidentStore } from "@/lib/store";
+import { Link } from "react-router-dom";
 
 type Incident = {
 	id: string;
@@ -49,7 +50,7 @@ export const IncidentDashboard = () => {
 	// console.log(filteredIncidents);
 
 	return (
-		<div className="space-y-4 w-full max-w-2xl">
+		<div className="space-y-4 w-full max-w-3xl">
 			<h2 className="text-2xl font-bold">Recent Incidents</h2>
 
 			<div className="flex flex-col sm:flex-row gap-4">
@@ -95,56 +96,59 @@ export const IncidentDashboard = () => {
 						key={incident.id}
 						className="p-4 flex flex-col gap-4 justify-center"
 					>
-						{incident.image && (
-							<img src={incident.image} className="h-60 mb-3 self-center" />
-						)}
-						<div className="flex justify-between items-start">
-							<div className="space-y-2">
-								<div className="flex items-center space-x-2">
-									<span className="font-semibold capitalize">
-										{incident.category}
-									</span>
-									<span className="text-sm text-gray-500">
-										{new Date(incident.timestamp).toLocaleString()}
-									</span>
+						<Link key={incident.id} to={`/admin/${incident.id}`}>
+							{/* {incident.image && (
+								<img src={incident.image} className="h-60 mb-3 self-center" />
+							)} */}
+							<div className="flex justify-between items-start">
+								<div className="space-y-2">
+									<div className="flex items-center space-x-2">
+										<span className="font-semibold capitalize">
+											{incident.category}
+										</span>
+										<span className="text-sm text-gray-500">
+											{new Date(incident.timestamp).toLocaleString()}
+										</span>
+									</div>
+									<p className="text-sm line-clamp-2">{incident.description}</p>
+									{incident.latitude && incident.longitude && (
+										<p className="text-sm text-gray-500">
+											Location: {incident.latitude.toFixed(4)},{" "}
+											{incident.longitude.toFixed(4)}
+										</p>
+									)}
+									{incident.hasMedia && (
+										<span className="text-sm text-blue-500">
+											Contains media attachments
+										</span>
+									)}
 								</div>
-								<p className="text-sm">{incident.description}</p>
-								{incident.latitude && incident.longitude && (
-									<p className="text-sm text-gray-500">
-										Location: {incident.latitude.toFixed(4)},{" "}
-										{incident.longitude.toFixed(4)}
-									</p>
-								)}
-								{incident.hasMedia && (
-									<span className="text-sm text-blue-500">
-										Contains media attachments
+								<div className="flex flex-col items-end space-y-2">
+									<span
+										className={`text-sm px-2 py-1 rounded-full ${
+											incident.status === "pending"
+												? "bg-yellow-100 text-yellow-800"
+												: incident.status === "in-progress"
+												? "bg-blue-100 text-blue-800"
+												: "bg-green-100 text-green-800"
+										}`}
+									>
+										{incident.status}
 									</span>
-								)}
+									{incident.isAnonymous && (
+										<span className="text-xs text-gray-500">Anonymous</span>
+									)}
+								</div>
 							</div>
-							<div className="flex flex-col items-end space-y-2">
-								<span
-									className={`text-sm px-2 py-1 rounded-full ${
-										incident.status === "pending"
-											? "bg-yellow-100 text-yellow-800"
-											: incident.status === "in-progress"
-											? "bg-blue-100 text-blue-800"
-											: "bg-green-100 text-green-800"
-									}`}
-								>
-									{incident.status}
-								</span>
-								{incident.isAnonymous && (
-									<span className="text-xs text-gray-500">Anonymous</span>
-								)}
-							</div>
-						</div>
-						{/* <AudioRecord incident={incident} /> */}
-						{incident.audioUrl && (
-							<audio controls>
-								<source src={incident.audioUrl} type="audio/mpeg" />
-								Your browser no support audio element.
-							</audio>
-						)}
+							{/* <AudioRecord incident={incident} /> */}
+							{incident.audioUrl && (
+								<p className="text-xs text-end">Audio message</p>
+								// <audio controls>
+								// 	<source src={incident.audioUrl} type="audio/mpeg" />
+								// 	Your browser no support audio element.
+								// </audio>
+							)}
+						</Link>
 					</Card>
 				))}
 			</div>

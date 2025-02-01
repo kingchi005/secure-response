@@ -163,6 +163,53 @@ export const getIncidents = async (): Promise<Incident[]> => {
 	}
 };
 
+export const getIncidentById = async (id: string): Promise<Incident | null> => {
+	try {
+		const result = await client.execute({
+			sql: `SELECT * FROM incidents WHERE id = ?`,
+			args: [id],
+		});
+
+		if (result.rows.length === 0) {
+			return null;
+		}
+
+		const row = result.rows[0];
+		return {
+			id: String(row.id),
+			category: String(row.category),
+			description: String(row.description),
+			timestamp: String(row.timestamp),
+			status: String(row.status) as IncidentStatus,
+			image: String(row.image),
+			hasMedia: Boolean(row.hasMedia),
+			isAnonymous: Boolean(row.isAnonymous),
+			latitude: row.latitude ? Number(row.latitude) : null,
+			longitude: row.longitude ? Number(row.longitude) : null,
+			audioUrl: row.audioUrl ? String(row.audioUrl) : null,
+		};
+	} catch (error) {
+		console.error("Failed to fetch incident by ID:", error);
+		throw error;
+	}
+};
+
+export const updateIncidentStatus = async (
+	id: string,
+	status: Incident["status"]
+): Promise<void> => {
+	try {
+		await client.execute({
+			sql: `UPDATE incidents SET status = ? WHERE id = ?`,
+			args: [status, id],
+		});
+		console.log(`Incident with ID ${id} updated successfully`);
+	} catch (error) {
+		console.error("Failed to delete incident:", error);
+		throw error;
+	}
+};
+
 export const deleteIncident = async (id: string): Promise<void> => {
 	try {
 		await client.execute({

@@ -10,17 +10,26 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import { useAuthStore, useIncidentStore } from "./lib/store";
 import AdminDashboard from "./pages/AdminDashboard";
+import IncidentPage from "./pages/IncidentPage";
 
 const queryClient = new QueryClient();
 
 const App = () => {
 	const initIncidentStore = useIncidentStore((st) => st.init);
 	useEffect(() => {
+		let interval;
 		initDB()
 			.then(() => {
-				initIncidentStore();
+				fetchIncidents();
 			})
 			.catch(console.error);
+
+		function fetchIncidents() {
+			interval = setInterval(async () => {
+				initIncidentStore();
+			}, 1000);
+		}
+		return clearInterval(interval);
 	}, []);
 
 	return (
@@ -32,6 +41,7 @@ const App = () => {
 					<Routes>
 						<Route path="/" element={<Index />} />
 						<Route path="/admin" element={<Admin />} />
+						<Route path="/admin/:id" element={<IncidentPage />} />
 						<Route path="*" element={<NotFound />} />
 					</Routes>
 				</BrowserRouter>
