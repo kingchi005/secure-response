@@ -61,11 +61,12 @@ npm run dev
 
 ```json
 {
-  "appId": "com.example.myapp",
-  "appName": "My React App",
-  "webDir": "build",
-  "bundledWebRuntime": false
+	"appId": "com.example.myapp",
+	"appName": "My React App",
+	"webDir": "build",
+	"bundledWebRuntime": false
 }
+```
 
 ## What technologies are used for this project?
 
@@ -77,4 +78,7 @@ This project is built with .
 - shadcn-ui
 - Tailwind CSS
 - Capacitor
+
+```
+
 ```
