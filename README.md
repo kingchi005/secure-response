@@ -1,8 +1,6 @@
-# Welcome to Crowd sourced security
+# Welcome to Secure Incidence alerting system
 
 ## Project info
-
-**URL**: https://lovable.dev/projects/d782a8dd-718d-48d9-9b90-3da99b6628fe
 
 ## Running the code locally on the web
 
