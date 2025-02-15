@@ -11,11 +11,13 @@ import Login from "./pages/Login";
 import { useAuthStore, useIncidentStore } from "./lib/store";
 import AdminDashboard from "./pages/AdminDashboard";
 import IncidentPage from "./pages/IncidentPage";
+import { useToast } from "./hooks/use-toast";
 
 const queryClient = new QueryClient();
 
 const App = () => {
 	const initIncidentStore = useIncidentStore((st) => st.init);
+	const { toast } = useToast();
 	useEffect(() => {
 		let interval;
 		initDB()

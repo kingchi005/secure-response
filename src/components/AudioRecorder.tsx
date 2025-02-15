@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { VoiceRecorder } from "capacitor-voice-recorder";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { saveIncident } from "@/lib/db";
@@ -15,86 +16,81 @@ export const AudioRecorder = () => {
 
 	const { toast } = useToast();
 
-	const startRecording = async () => {
-		try {
-			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-			mediaRecorder.current = new MediaRecorder(stream);
+	useEffect(() => {
+		requestPermissions();
+	}, []);
 
-			mediaRecorder.current.ondataavailable = (event) => {
-				audioChunks.current.push(event.data);
-			};
-
-			// mediaRecorder.current.onstop = () => {
-			// 	const audioBlob = new Blob(audioChunks.current, { type: "audio/wav" });
-			// 	const audioUrl = URL.createObjectURL(audioBlob);
-			// 	// Store locally
-			// 	localStorage.setItem("emergency-audio", audioUrl);
-			// 	audioChunks.current = [];
-			// };
-
-			mediaRecorder.current.onstop = () => {
-				const audioBlob = new Blob(audioChunks.current, { type: "audio/wav" });
-
-				// Convert Blob to Base64
-				const reader = new FileReader();
-				reader.readAsDataURL(audioBlob);
-				reader.onloadend = async () => {
-					// const base64Audio = (reader.result as string[]).split(",")[1]; // Extract base64 part
-					// console.log(reader.result);
-					setAudioUrl(reader.result as string);
-
-					await saveIncident({
-						id: uuidv4(),
-						category: "emergency",
-						description: `Voice recording`,
-						timestamp: new Date().toISOString(),
-						status: "pending",
-						image: "",
-						hasMedia: false,
-						isAnonymous: false,
-						audioUrl: reader.result as string,
-						latitude: location.latitude,
-						longitude: location.longitude,
+	function requestPermissions() {
+		VoiceRecorder.requestAudioRecordingPermission()
+			.then((result) => {
+				// console.log(result.value);
+				if (!result.value)
+					toast({
+						title: "Permission Denied",
+						description: "Unable to access microphone",
+						variant: "destructive",
 					});
-
-					// Store in localStorage (optional)
-					// localStorage.setItem("emergency-audio-base64", base64Audio);
-				};
-
-				// Reset audio chunks
-				audioChunks.current = [];
-			};
-
-			mediaRecorder.current.start();
-			setIsRecording(true);
-
-			toast({
-				title: "Recording Started",
-				description: "Audio recording has begun",
+			})
+			.catch((error) => {
+				console.error("Permission denied:", error);
+				toast({
+					title: "Permission Denied",
+					description: "Unable to access microphone",
+					variant: "destructive",
+				});
 			});
-		} catch (error) {
-			console.error("Error accessing microphone:", error);
-			toast({
-				title: "Recording Error",
-				description: "Unable to access microphone",
-				variant: "destructive",
+	}
+
+	const startRecording = async () => {
+		if (isRecording) return;
+		VoiceRecorder.startRecording()
+			.then(() => {
+				setIsRecording(true);
+				toast({
+					title: "Recording Started",
+					description: "Audio recording has begun",
+				});
+			})
+			.catch((error) => {
+				console.error("Error accessing microphone:", error);
+				toast({
+					title: "Recording Error",
+					description: "Unable to access microphone",
+					variant: "destructive",
+				});
 			});
-		}
 	};
 
-	// console.log(location);
-
 	const stopRecording = async () => {
-		if (mediaRecorder.current && isRecording) {
-			mediaRecorder.current.stop();
-			mediaRecorder.current.stream.getTracks().forEach((track) => track.stop());
-			setIsRecording(false);
+		if (!isRecording) return;
+		VoiceRecorder.stopRecording()
+			.then(async (result) => {
+				setIsRecording(false);
+				const audioUrl = `data:${result.value.mimeType};base64,${result.value.recordDataBase64}`;
+				setAudioUrl(audioUrl);
 
-			toast({
-				title: "Recording Stopped",
-				description: "Audio has been saved locally",
+				toast({
+					title: "Recording Stopped",
+					description: "Audio has been saved",
+				});
+
+				await saveIncident({
+					id: uuidv4(),
+					category: "emergency",
+					description: `Voice recording`,
+					timestamp: new Date().toISOString(),
+					status: "pending",
+					image: "",
+					hasMedia: false,
+					isAnonymous: false,
+					audioUrl,
+					latitude: location.latitude,
+					longitude: location.longitude,
+				});
+			})
+			.catch((error) => {
+				console.log(error);
 			});
-		}
 	};
 
 	return (
@@ -108,6 +104,13 @@ export const AudioRecorder = () => {
 					{isRecording ? "Stop Recording" : "Start Recording"}
 				</Button>
 			</div>
+
+			{/* {audioUrl && (
+				<audio controls>
+					<source src={audioUrl} type="audio/mpeg" />
+					Your browser no support audio element.
+				</audio>
+			)} */}
 		</>
 	);
 };

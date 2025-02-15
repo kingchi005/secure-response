@@ -63,15 +63,17 @@ const Login = () => {
 		e: React.FormEvent<HTMLFormElement>
 	) => {
 		e.preventDefault();
-
+		setLoading(true);
 		const exists = findByEmail(email);
 
-		if (!exists)
+		if (!exists) {
+			setLoading(false);
 			return toast({
 				title: "Error",
 				style: { color: "red" },
 				description: "You are not registered as a responder on this platform",
 			});
+		}
 
 		if (await createAndSendCode(email))
 			toast({
@@ -79,6 +81,7 @@ const Login = () => {
 				style: { color: "green" },
 				description: "Verificastion code has been sent to you email",
 			});
+		setLoading(false);
 
 		setPage("verify");
 	};
@@ -132,8 +135,8 @@ const Login = () => {
 								/>
 							</div>
 
-							<Button type="submit" className="w-full">
-								Send verification email
+							<Button disabled={loading} type="submit" className="w-full">
+								{loading ? "Please wait..." : "Send verification email"}
 							</Button>
 						</form>
 					)}

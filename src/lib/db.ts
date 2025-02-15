@@ -119,16 +119,19 @@ export const saveIncident = async (incident: Incident): Promise<void> => {
 		const emailBody = `
 			Emergency Incident Report:
 			
-			ID: <string>${incident.id}</string>
-			Category: <string>${incident.category}</string>
-			Description: <string>${incident.description}</string>
-			Timestamp: <string>${incident.timestamp}</string>
-			Status: <string>${incident.status}</string>
-			Location: <string>(${incident.latitude}, ${incident.longitude})</string>
-			Anonymous: <string>${incident.isAnonymous ? "Yes" : "No"}</string>
+			ID: <strong>${incident.id}</strong>
+			Category: <strong>${incident.category}</strong>
+			Description: <strong>${incident.description}</strong>
+			Timestamp: <strong>${incident.timestamp}</strong>
+			Status: <strong>${incident.status}</strong>
+			Location: <strong>(${incident.latitude}, ${incident.longitude})</strong>
+			Anonymous: <strong>${incident.isAnonymous ? "Yes" : "No"}</strong>
         `;
 		const responders = useResponderStore.getState().data;
-		await sendMail(emailBody, responders[0].email, "Emergency Incident Report");
+
+		responders.forEach((responder) => {
+			sendMail(emailBody, responder.email, "Emergency Incident Report");
+		});
 	} catch (error) {
 		console.error("Failed to save incident:", error);
 		throw error;
